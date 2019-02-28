@@ -7,15 +7,37 @@
 struct keyboard_key {
   const char* display_name;
   const char* escape_sequence;
+  int color;
   WINDOW* win;
+};
+
+enum colors {
+  WHITE_BLACK,
+  BLACK_WHITE,
+  BLACK_GREEN
 };
 
 struct keyboard_key keyboard_matrix[][14] = {
   {{"§"},{"1"},{"2"},{"3"},{"4"},{"5"},{"6"},{"7"},{"8"},{"9"},{"0"},{"'"},{"^"},{"BACKSPACE","\b"}},
   {{"TAB","\t"},{"q"},{"w"},{"e"},{"r"},{"t"},{"z"},{"u"},{"i"},{"o"},{"p"},{"ü"},{"¨"},{"ENTER","\n"}},
   {{"CAPS"},{"a"},{"s"},{"d"},{"f"},{"g"},{"h"},{"j"},{"k"},{"l"},{"ö"},{"ä"},{"$"}},
-  {{"SHIFT"},{"<"},{"y"},{"x"},{"c"},{"v"},{"b"},{"n"},{"m"},{","},{"."},{"-"}},
+  {{"SHIFT"},{"<"},{"y"},{"x"},{"c"},{"v"},{"b"},{"n"},{"m"},{","},{"."},{"-"},{" "}},
 };
+
+void key_press(struct keyboard_key*const k){
+  wbkgd(k->win, COLOR_PAIR(BLACK_GREEN));
+  wrefresh(k->win);
+  const char* seq = k->escape_sequence;
+  if(!seq)
+  seq = k->display_name;
+  write(3,seq,strlen(seq));
+  refresh();
+}
+
+void key_release(struct keyboard_key*const k){
+  wbkgd(k->win, COLOR_PAIR(k->color));
+  wrefresh(k->win);
+}
 
 int main(){
   if(!initscr()){
@@ -26,12 +48,6 @@ int main(){
   clear();
   noecho();
   cbreak();
-
-  enum {
-    WHITE_BLACK,
-    BLACK_WHITE,
-    BLACK_GREEN
-  };
 
   init_pair(WHITE_BLACK, COLOR_WHITE, COLOR_BLACK);
   init_pair(BLACK_WHITE, COLOR_BLACK, COLOR_WHITE);
@@ -45,45 +61,47 @@ int main(){
   int h = LINES / ny;
   for(int y=0; y<ny; y++)
   for(int x=0; x<nx; x++){
-    if(!keyboard_matrix[y][x].display_name)
+    struct keyboard_key*const k = &keyboard_matrix[y][x];
+    if(!k->display_name)
       continue;
     WINDOW* win = subwin(stdscr, h, w, y*h, x*w);
-    int tx = (w-strlen(keyboard_matrix[y][x].display_name))/2;
+    int tx = (w-strlen(k->display_name))/2;
     if(tx<0) tx = 0;
-    mvwaddstr(win, h/2, tx, keyboard_matrix[y][x].display_name);
-    wbkgd(win, COLOR_PAIR((x+y)%2?WHITE_BLACK:BLACK_WHITE));
-    keyboard_matrix[y][x].win = win;
+    mvwaddstr(win, h/2, tx, k->display_name);
+    k->color = (x+y) % 2 ? WHITE_BLACK : BLACK_WHITE;
+    wbkgd(win, COLOR_PAIR(k->color));
+    k->win = win;
   }
 
   refresh();
 
   keypad(stdscr, true);
-  mousemask(ALL_MOUSE_EVENTS, 0);
+  mousemask(BUTTON1_PRESSED | BUTTON1_RELEASED, 0);
+  mouseinterval(0);
   int ch;
+  struct keyboard_key* last = 0;
   while( (ch = getch()) != 'q' ){
     switch(ch){
       case KEY_MOUSE: {
         MEVENT event;
         if(getmouse(&event) != OK)
           break;
+        if(event.bstate & BUTTON1_RELEASED){
+          if(last)
+            key_release(last);
+        }
         if(event.bstate & BUTTON1_PRESSED){
-          int mx = event.x/w;
-          int my = event.y/h;
-          if(mx>=nx || my>=ny)
+          if(last)
+            key_release(last);
+          int x = event.x/w;
+          int y = event.y/h;
+          if(x>=nx || y>=ny)
             break;
-          if(!keyboard_matrix[my][mx].win)
+          struct keyboard_key* k = &keyboard_matrix[y][x];
+          if(!k->win)
             break;
-          wbkgd(keyboard_matrix[my][mx].win, COLOR_PAIR(BLACK_GREEN));
-          wrefresh(keyboard_matrix[my][mx].win);
-          const char* seq = keyboard_matrix[my][mx].escape_sequence;
-          if(!seq)
-            seq = keyboard_matrix[my][mx].display_name;
-          write(3,seq,strlen(seq));
-          refresh();
-          sleep(1);
-          wbkgd(keyboard_matrix[my][mx].win, COLOR_PAIR((mx+my)%2?WHITE_BLACK:BLACK_WHITE));
-          wrefresh(keyboard_matrix[my][mx].win);
-          refresh();
+          key_press(k);
+          last = k;
         }
       } break;
     }
