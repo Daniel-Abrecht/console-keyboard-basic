@@ -4,6 +4,8 @@
 CC = gcc
 AR = ar
 
+PREFIX = /usr
+
 SOURCES = src/console-keyboard-basic.c
 
 OPTIONS  = -ffunction-sections -fdata-sections -g -Og
@@ -33,6 +35,12 @@ build/%.c.o: %.c
 
 bin/console-keyboard-basic: $(OBJECTS) | bin/.dir
 	$(CC) $(LD_OPTS) $^ -o $@
+
+install:
+	cp bin/console-keyboard-basic $(PREFIX)/bin/console-keyboard-basic
+
+uninstall:
+	rm -f $(PREFIX)/bin/console-keyboard-basic
 
 clean:
 	rm -rf bin/ build/
