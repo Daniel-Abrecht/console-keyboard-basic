@@ -37,10 +37,11 @@ bin/console-keyboard-basic: $(OBJECTS) | bin/.dir
 	$(CC) $(LD_OPTS) $^ -o $@
 
 install:
-	cp bin/console-keyboard-basic $(PREFIX)/bin/console-keyboard-basic
+	mkdir -p "$(DESTDIR)$(PREFIX)/bin/"
+	cp bin/console-keyboard-basic "$(DESTDIR)$(PREFIX)/bin/console-keyboard-basic"
 
 uninstall:
-	rm -f $(PREFIX)/bin/console-keyboard-basic
+	rm -f "$(DESTDIR)$(PREFIX)/bin/console-keyboard-basic"
 
 clean:
 	rm -rf bin/ build/
