@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <locale.h>
 
 struct keyboard_key {
   const char* display_name;
@@ -29,7 +30,7 @@ void key_press(struct keyboard_key*const k){
   wrefresh(k->win);
   const char* seq = k->escape_sequence;
   if(!seq)
-  seq = k->display_name;
+    seq = k->display_name;
   write(3,seq,strlen(seq));
   refresh();
 }
@@ -40,6 +41,7 @@ void key_release(struct keyboard_key*const k){
 }
 
 int main(){
+  setlocale(LC_CTYPE, "");
   if(!initscr()){
     fprintf(stderr,"initscr failed\n");
     return 1;
