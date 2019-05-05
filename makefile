@@ -1,5 +1,5 @@
-# Copyright (c) 2018 Daniel Abrecht
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2019 Daniel Abrecht
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 CC = gcc
 AR = ar
@@ -16,7 +16,8 @@ CC_OPTS += $(shell ncursesw5-config --cflags)
 CC_OPTS += -Wno-missing-field-initializers
 
 LD_OPTS  = -Wl,-gc-sections
-LIBS  = $(shell ncursesw5-config --libs)
+LIBS += $(shell ncursesw5-config --libs)
+LIBS += -lconsolekeyboard
 
 CC_OPTS += $(OPTIONS)
 LD_OPTS += $(OPTIONS)

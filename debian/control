@@ -2,7 +2,7 @@ Source: console-keyboard-basic
 Section: misc
 Priority: optional
 Maintainer: Daniel Patrick Abrecht <deb@danielabrecht.ch>
-Build-Depends: libncursesw5-dev, debhelper (>= 9)
+Build-Depends: libconsolekeyboard-dev, libncursesw5-dev, debhelper (>= 9)
 Standards-Version: 3.9.8
 #Homepage: <insert the upstream URL, if relevant>
 Vcs-Git:
@@ -15,5 +15,5 @@ Vcs-Browser:
 Package: console-keyboard-basic
 Provides: console-keyboard
 Architecture: any
-Depends: libncursesw5, ${shlibs:Depends}, ${misc:Depends}
+Depends: libconsolekeyboard0, libncursesw5, ${shlibs:Depends}, ${misc:Depends}
 Description: A very basic console keyboard

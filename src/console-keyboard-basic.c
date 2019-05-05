@@ -1,9 +1,12 @@
-#include <ncursesw/curses.h>
+// Copyright (c) 2019 Daniel Abrecht
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#include <ncurses.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
+#include <libconsolekeyboard.h>
 
 struct keyboard_key {
   const char* display_name;
@@ -19,8 +22,8 @@ enum colors {
 };
 
 struct keyboard_key keyboard_matrix[][14] = {
-  {{"§"},{"1"},{"2"},{"3"},{"4"},{"5"},{"6"},{"7"},{"8"},{"9"},{"0"},{"'"},{"^"},{"BACKSPACE","\b"}},
-  {{"TAB","\t"},{"q"},{"w"},{"e"},{"r"},{"t"},{"z"},{"u"},{"i"},{"o"},{"p"},{"ü"},{"¨"},{"ENTER","\n"}},
+  {{"§"},{"1"},{"2"},{"3"},{"4"},{"5"},{"6"},{"7"},{"8"},{"9"},{"0"},{"'"},{"^"},{"BACKSPACE","!BACKSPACE"}},
+  {{"TAB","!TAB"},{"q"},{"w"},{"e"},{"r"},{"t"},{"z"},{"u"},{"i"},{"o"},{"p"},{"ü"},{"¨"},{"ENTER","!ENTER"}},
   {{"CAPS"},{"a"},{"s"},{"d"},{"f"},{"g"},{"h"},{"j"},{"k"},{"l"},{"ö"},{"ä"},{"$"}},
   {{"SHIFT"},{"<"},{"y"},{"x"},{"c"},{"v"},{"b"},{"n"},{"m"},{","},{"."},{"-"},{" "}},
 };
@@ -31,7 +34,13 @@ void key_press(struct keyboard_key*const k){
   const char* seq = k->escape_sequence;
   if(!seq)
     seq = k->display_name;
-  write(3,seq,strlen(seq));
+  if(!seq)
+    return;
+  if(seq[0] == '!'){
+    lck_send_key(seq+1);
+  }else{
+    lck_send_string(seq);
+  }
   refresh();
 }
 
