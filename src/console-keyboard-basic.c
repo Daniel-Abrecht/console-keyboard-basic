@@ -49,7 +49,27 @@ void key_release(struct keyboard_key*const k){
   wrefresh(k->win);
 }
 
+enum display_state {
+  STATE_WHOLE_KEYBOARD,
+  STATE_SHOW_SPECIAL_KEYS_ONLY,
+};
+
+enum display_state display_state;
+
+int set_display_state(enum display_state s){
+  int ret = 0;
+  switch(s){
+    case STATE_WHOLE_KEYBOARD: ret = lck_set_height((struct lck_super_size){12}); break;
+    case STATE_SHOW_SPECIAL_KEYS_ONLY: ret = lck_set_height((struct lck_super_size){3}); break;
+    default: return -1;
+  }
+  if(ret != -1)
+    display_state = s;
+  return ret;
+}
+
 int main(){
+  set_display_state(STATE_WHOLE_KEYBOARD);
   setlocale(LC_CTYPE, "");
   if(!initscr()){
     fprintf(stderr,"initscr failed\n");
