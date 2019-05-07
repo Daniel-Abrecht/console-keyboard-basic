@@ -22,10 +22,11 @@ enum colors {
 };
 
 struct keyboard_key keyboard_matrix[][14] = {
-  {{"§"},{"1"},{"2"},{"3"},{"4"},{"5"},{"6"},{"7"},{"8"},{"9"},{"0"},{"'"},{"^"},{"BACKSPACE","!BACKSPACE"}},
-  {{"TAB","!TAB"},{"q"},{"w"},{"e"},{"r"},{"t"},{"z"},{"u"},{"i"},{"o"},{"p"},{"ü"},{"¨"},{"ENTER","!ENTER"}},
-  {{"CAPS"},{"a"},{"s"},{"d"},{"f"},{"g"},{"h"},{"j"},{"k"},{"l"},{"ö"},{"ä"},{"$"}},
-  {{"SHIFT"},{"<"},{"y"},{"x"},{"c"},{"v"},{"b"},{"n"},{"m"},{","},{"."},{"-"},{" "}},
+  {{"⇅"},{"ESC","!ESCAPE"},{"PgUp","!PAGE_UP"},{"PgDn","!PAGE_DOWN"},{"HOME","!HOME"},{"END","!END"},{"-"},{"/"},{"|"},{"◀","!LEFT"},{"▶","!RIGHT"},{"▼","!DOWN"},{"▲","!UP"},{"DEL","!DELETE"}},
+  {{"§"},{"1"},{"2"},{"3"},{"4"},{"5"},{"6"},{"7"},{"8"},{"9"},{"0"},{"'"},{"^"},{"⌫ BACKSPACE","!BACKSPACE"}},
+  {{"TAB","!TAB"},{"q"},{"w"},{"e"},{"r"},{"t"},{"z"},{"u"},{"i"},{"o"},{"p"},{"ü"},{"¨"},{"⏎ ENTER","!ENTER"}},
+  {{"⇧⇪"},{"a"},{"s"},{"d"},{"f"},{"g"},{"h"},{"j"},{"k"},{"l"},{"ö"},{"ä"},{"$"}},
+  {{"CTRL"},{"<"},{"y"},{"x"},{"c"},{"v"},{"b"},{"n"},{"m"},{","},{"."},{"-"},{" "}},
 };
 
 void key_press(struct keyboard_key*const k){
@@ -59,7 +60,7 @@ enum display_state display_state;
 int set_display_state(enum display_state s){
   int ret = 0;
   switch(s){
-    case STATE_WHOLE_KEYBOARD: ret = lck_set_height((struct lck_super_size){12}); break;
+    case STATE_WHOLE_KEYBOARD: ret = lck_set_height((struct lck_super_size){15}); break;
     case STATE_SHOW_SPECIAL_KEYS_ONLY: ret = lck_set_height((struct lck_super_size){3}); break;
     default: return -1;
   }
@@ -70,7 +71,9 @@ int set_display_state(enum display_state s){
 
 int main(){
   set_display_state(STATE_WHOLE_KEYBOARD);
-  setlocale(LC_CTYPE, "");
+  int sleep(int);
+  sleep(1); // TODO: do this properly and implement redrawing of keyboard
+  setlocale(LC_CTYPE, "C.UTF-8");
   if(!initscr()){
     fprintf(stderr,"initscr failed\n");
     return 1;
@@ -79,6 +82,7 @@ int main(){
   clear();
   noecho();
   cbreak();
+  curs_set(0);
 
   init_pair(WHITE_BLACK, COLOR_WHITE, COLOR_BLACK);
   init_pair(BLACK_WHITE, COLOR_BLACK, COLOR_WHITE);
@@ -87,7 +91,7 @@ int main(){
   color_set(BLACK_WHITE, 0);
 
   int nx = 14;
-  int ny = 4;
+  int ny = 5;
   int w = COLS / nx;
   int h = LINES / ny;
   for(int y=0; y<ny; y++)
