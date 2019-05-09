@@ -74,7 +74,7 @@ enum display_state {
   STATE_COUNT
 };
 
-enum display_state display_state;
+enum display_state display_state = STATE_COUNT;
 
 void redraw(void);
 
