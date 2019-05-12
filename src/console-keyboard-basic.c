@@ -110,8 +110,24 @@ void onwinch(int sig){
 
 int init(void){
 
+  for(int y=0; y<5; y++)
+  for(int x=0; x<nx; x++){
+    struct keyboard_key*const k = &keyboard_matrix[y][x];
+    if(!k->win)
+      continue;
+    delwin(k->win);
+    k->win = 0;
+  }
+
   ioctl(0, TIOCGWINSZ, &winsize);
-  resizeterm(winsize.ws_row, winsize.ws_col);
+
+  // Using endwin and initscr instead of resizeterm, because resizeterm failed to reset the scrolling region.
+  endwin();
+  if(!initscr()){
+    fprintf(stderr,"initscr failed\n");
+    return -1;
+  }
+
   start_color();
   clear();
   noecho();
@@ -127,14 +143,6 @@ int init(void){
   keypad(stdscr, true);
   mousemask(BUTTON1_PRESSED | BUTTON1_RELEASED, 0);
   mouseinterval(0);
-
-  for(int y=0; y<5; y++)
-  for(int x=0; x<nx; x++){
-    struct keyboard_key*const k = &keyboard_matrix[y][x];
-    if(!k->win)
-      continue;
-    delwin(k->win);
-  }
 
   return 0;
 }
@@ -169,10 +177,6 @@ int main(){
   set_display_state(STATE_WHOLE_KEYBOARD);
   setlocale(LC_CTYPE, "C.UTF-8");
 
-  if(!initscr()){
-    fprintf(stderr,"initscr failed\n");
-    return -1;
-  }
   if(init())
     return 1;
   redraw();
