@@ -38,11 +38,18 @@ build/%.c.o: %.c
 bin/console-keyboard-basic: $(OBJECTS) | bin/.dir
 	$(CC) $(LD_OPTS) $^ $(LIBS) -o $@
 
-install:
+install: install-bin install-link
+	@true
+
+install-bin:
 	mkdir -p "$(DESTDIR)$(PREFIX)/bin/"
 	cp bin/console-keyboard-basic "$(DESTDIR)$(PREFIX)/bin/console-keyboard-basic"
 
+install-link:
+	ln -s "$(DESTDIR)$(PREFIX)/bin/console-keyboard-basic" "$(DESTDIR)$(PREFIX)/bin/console-keyboard" || true
+
 uninstall:
+	[ -f "$(DESTDIR)$(PREFIX)/bin/console-keyboard" ] && [ "$(shell readlink "$(DESTDIR)$(PREFIX)/bin/console-keyboard")" = "$(DESTDIR)$(PREFIX)/bin/console-keyboard-basic" ] && rm -f "$(DESTDIR)$(PREFIX)/bin/console-keyboard" || true
 	rm -f "$(DESTDIR)$(PREFIX)/bin/console-keyboard-basic"
 
 clean:

@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = configure ]
+then
+  update-alternatives --install /usr/bin/console-keyboard console-keyboard /usr/bin/console-keyboard-basic 100
+fi
+
+exit 0
