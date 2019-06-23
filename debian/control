@@ -15,5 +15,5 @@ Vcs-Browser:
 Package: console-keyboard-basic
 Provides: console-keyboard
 Architecture: any
-Depends: libconsolekeyboard0, libncursesw5, ${shlibs:Depends}, ${misc:Depends}
+Depends: libconsolekeyboard1, libncursesw5, ${shlibs:Depends}, ${misc:Depends}
 Description: A very basic console keyboard
