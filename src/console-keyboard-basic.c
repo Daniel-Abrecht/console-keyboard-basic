@@ -43,14 +43,47 @@ struct keyboard_key keyboard_matrix_default[5][14] = {
 };
 struct keyboard_key keyboard_matrix_shift[5][14] = {
   {{"⇅",0,next_mode},{"ESC","!ESCAPE"},{"PgUp","!PAGE_UP"},{"PgDn","!PAGE_DOWN"},{"HOME","!HOME"},{"END","!END"},{"&"},{"/"},{"|"},{"◀","!LEFT"},{"▶","!RIGHT"},{"▼","!DOWN"},{"▲","!UP"},{"DEL","!DELETE"}},
-  {{":"},{"1"},{"2"},{"3"},{"4"},{"5"},{"6"},{"7"},{"8"},{"9"},{"0"},{"'"},{"\""},{"⌫ BACKSPACE","!BACKSPACE"}},
+  {{":"},{"+"},{"@"},{"#"},{"*"},{"%"},{"&"},{"~"},{"("},{")"},{"="},{"?"},{"^"},{"⌫ BACKSPACE","!BACKSPACE"}},
   {{"TAB","!TAB"},{"Q"},{"W"},{"E"},{"R"},{"T"},{"Z"},{"U"},{"I"},{"O"},{"P"},{"["},{"]"},{"⏎ ENTER","!ENTER"}},
-  {{"⇪",0,shift},{"A"},{"S"},{"D"},{"F"},{"G"},{"H"},{"J"},{"K"},{"L"},{"{"},{"}"},{"$"},{" "}},
-  {{"CTRL"},{"\\"},{"Y"},{"X"},{"C"},{"V"},{"B"},{"N"},{"M"},{"."},{","},{";"},{"-"},{" "}},
+  {{"⇪",0,shift},{"A"},{"S"},{"D"},{"F"},{"G"},{"H"},{"J"},{"K"},{"L"},{"<"},{">"},{"$"},{" "}},
+  {{"CTRL"},{"\\"},{"Y"},{"X"},{"C"},{"V"},{"B"},{"N"},{"M"},{"."},{","},{";"},{"_"},{" "}},
 };
 struct keyboard_key (*keyboard_matrix)[5][14] = &keyboard_matrix_default;
 static const int nx = 14;
 static int ny = 5;
+
+enum shift_state {
+  ST_NO_SHIFT,
+  ST_ONE_SHIFT,
+  ST_SHIFT,
+  ST_COUNT
+};
+
+enum shift_state shift_state = ST_NO_SHIFT;
+
+void redraw(void);
+int set_shift_state(enum shift_state s){
+  if(shift_state == s)
+    return 0;
+  switch(s){
+    case ST_NO_SHIFT: keyboard_matrix = &keyboard_matrix_default; break;
+    case ST_ONE_SHIFT:
+    case ST_SHIFT: keyboard_matrix = &keyboard_matrix_shift; break;
+    default: return -1;
+  }
+  shift_state = s;
+  redraw();
+  if(s == ST_SHIFT){
+    struct keyboard_key*const k = &(*keyboard_matrix)[3][0];
+    wbkgd(k->win, COLOR_PAIR(BLACK_GREEN));
+    wrefresh(k->win);
+  }
+  return 0;
+}
+
+void shift(void){
+  set_shift_state((shift_state+1) % ST_COUNT);
+}
 
 void key_press(struct keyboard_key*const k){
   wbkgd(k->win, COLOR_PAIR(BLACK_GREEN));
@@ -70,10 +103,12 @@ void key_press(struct keyboard_key*const k){
     lck_send_string(seq);
   }
   refresh();
+  if( shift_state == ST_ONE_SHIFT && (k != &keyboard_matrix_default[3][0] || k != &keyboard_matrix_shift[3][0]) )
+    set_shift_state(ST_NO_SHIFT);
 }
 
 void key_release(struct keyboard_key*const k){
-  if(k == &keyboard_matrix_shift[3][0])
+  if(k == &keyboard_matrix_default[3][0] || k == &keyboard_matrix_shift[3][0])
     return;
   wbkgd(k->win, COLOR_PAIR(k->color));
   wrefresh(k->win);
@@ -111,38 +146,6 @@ int set_display_state(enum display_state s){
 
 void next_mode(void){
   set_display_state( (display_state+1) % STATE_COUNT );
-}
-
-enum shift_state {
-  ST_NO_SHIFT,
-  ST_ONE_SHIFT,
-  ST_SHIFT,
-  ST_COUNT
-};
-
-enum shift_state shift_state = ST_NO_SHIFT;
-
-int set_shift_state(enum shift_state s){
-  if(shift_state == s)
-    return 0;
-  switch(s){
-    case ST_NO_SHIFT: keyboard_matrix = &keyboard_matrix_default; break;
-    case ST_ONE_SHIFT:
-    case ST_SHIFT: keyboard_matrix = &keyboard_matrix_shift; break;
-    default: return -1;
-  }
-  shift_state = s;
-  redraw();
-  if(s == ST_SHIFT){
-    struct keyboard_key*const k = &(*keyboard_matrix)[3][0];
-    wbkgd(k->win, COLOR_PAIR(BLACK_GREEN));
-    wrefresh(k->win);
-  }
-  return 0;
-}
-
-void shift(void){
-  set_shift_state((shift_state+1) % ST_COUNT);
 }
 
 void onwinch(int sig){
