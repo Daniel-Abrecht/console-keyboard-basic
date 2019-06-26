@@ -32,14 +32,23 @@ static struct winsize winsize;
 static int winchfd[2];
 
 void next_mode(void);
+void shift(void);
 
-struct keyboard_key keyboard_matrix[][14] = {
-  {{"⇅",0,next_mode},{"ESC","!ESCAPE"},{"PgUp","!PAGE_UP"},{"PgDn","!PAGE_DOWN"},{"HOME","!HOME"},{"END","!END"},{"-"},{"/"},{"|"},{"◀","!LEFT"},{"▶","!RIGHT"},{"▼","!DOWN"},{"▲","!UP"},{"DEL","!DELETE"}},
-  {{"§"},{"1"},{"2"},{"3"},{"4"},{"5"},{"6"},{"7"},{"8"},{"9"},{"0"},{"'"},{"^"},{"⌫ BACKSPACE","!BACKSPACE"}},
-  {{"TAB","!TAB"},{"q"},{"w"},{"e"},{"r"},{"t"},{"z"},{"u"},{"i"},{"o"},{"p"},{"ü"},{"¨"},{"⏎ ENTER","!ENTER"}},
-  {{"⇧⇪"},{"a"},{"s"},{"d"},{"f"},{"g"},{"h"},{"j"},{"k"},{"l"},{"ö"},{"ä"},{"$"}},
-  {{"CTRL"},{"<"},{"y"},{"x"},{"c"},{"v"},{"b"},{"n"},{"m"},{","},{"."},{"-"},{" "}},
+struct keyboard_key keyboard_matrix_default[5][14] = {
+  {{"⇅",0,next_mode},{"ESC","!ESCAPE"},{"PgUp","!PAGE_UP"},{"PgDn","!PAGE_DOWN"},{"HOME","!HOME"},{"END","!END"},{"&"},{"/"},{"|"},{"◀","!LEFT"},{"▶","!RIGHT"},{"▼","!DOWN"},{"▲","!UP"},{"DEL","!DELETE"}},
+  {{":"},{"1"},{"2"},{"3"},{"4"},{"5"},{"6"},{"7"},{"8"},{"9"},{"0"},{"'"},{"\""},{"⌫ BACKSPACE","!BACKSPACE"}},
+  {{"TAB","!TAB"},{"q"},{"w"},{"e"},{"r"},{"t"},{"z"},{"u"},{"i"},{"o"},{"p"},{"["},{"]"},{"⏎ ENTER","!ENTER"}},
+  {{"⇧",0,shift},{"a"},{"s"},{"d"},{"f"},{"g"},{"h"},{"j"},{"k"},{"l"},{"{"},{"}"},{"$"},{" "}},
+  {{"CTRL"},{"\\"},{"y"},{"x"},{"c"},{"v"},{"b"},{"n"},{"m"},{"."},{","},{";"},{"-"},{" "}},
 };
+struct keyboard_key keyboard_matrix_shift[5][14] = {
+  {{"⇅",0,next_mode},{"ESC","!ESCAPE"},{"PgUp","!PAGE_UP"},{"PgDn","!PAGE_DOWN"},{"HOME","!HOME"},{"END","!END"},{"&"},{"/"},{"|"},{"◀","!LEFT"},{"▶","!RIGHT"},{"▼","!DOWN"},{"▲","!UP"},{"DEL","!DELETE"}},
+  {{":"},{"1"},{"2"},{"3"},{"4"},{"5"},{"6"},{"7"},{"8"},{"9"},{"0"},{"'"},{"\""},{"⌫ BACKSPACE","!BACKSPACE"}},
+  {{"TAB","!TAB"},{"Q"},{"W"},{"E"},{"R"},{"T"},{"Z"},{"U"},{"I"},{"O"},{"P"},{"["},{"]"},{"⏎ ENTER","!ENTER"}},
+  {{"⇪",0,shift},{"A"},{"S"},{"D"},{"F"},{"G"},{"H"},{"J"},{"K"},{"L"},{"{"},{"}"},{"$"},{" "}},
+  {{"CTRL"},{"\\"},{"Y"},{"X"},{"C"},{"V"},{"B"},{"N"},{"M"},{"."},{","},{";"},{"-"},{" "}},
+};
+struct keyboard_key (*keyboard_matrix)[5][14] = &keyboard_matrix_default;
 static const int nx = 14;
 static int ny = 5;
 
@@ -64,6 +73,8 @@ void key_press(struct keyboard_key*const k){
 }
 
 void key_release(struct keyboard_key*const k){
+  if(k == &keyboard_matrix_shift[3][0])
+    return;
   wbkgd(k->win, COLOR_PAIR(k->color));
   wrefresh(k->win);
 }
@@ -102,6 +113,37 @@ void next_mode(void){
   set_display_state( (display_state+1) % STATE_COUNT );
 }
 
+enum shift_state {
+  ST_NO_SHIFT,
+  ST_ONE_SHIFT,
+  ST_SHIFT,
+  ST_COUNT
+};
+
+enum shift_state shift_state = ST_NO_SHIFT;
+
+int set_shift_state(enum shift_state s){
+  if(shift_state == s)
+    return 0;
+  switch(s){
+    case ST_NO_SHIFT: keyboard_matrix = &keyboard_matrix_default; break;
+    case ST_ONE_SHIFT:
+    case ST_SHIFT: keyboard_matrix = &keyboard_matrix_shift; break;
+    default: return -1;
+  }
+  shift_state = s;
+  redraw();
+  if(s == ST_SHIFT){
+    struct keyboard_key*const k = &(*keyboard_matrix)[3][0];
+    wbkgd(k->win, COLOR_PAIR(BLACK_GREEN));
+    wrefresh(k->win);
+  }
+  return 0;
+}
+
+void shift(void){
+  set_shift_state((shift_state+1) % ST_COUNT);
+}
 
 void onwinch(int sig){
   (void)sig;
@@ -112,7 +154,7 @@ int init(void){
 
   for(int y=0; y<5; y++)
   for(int x=0; x<nx; x++){
-    struct keyboard_key*const k = &keyboard_matrix[y][x];
+    struct keyboard_key*const k = &(*keyboard_matrix)[y][x];
     if(!k->win)
       continue;
     delwin(k->win);
@@ -153,7 +195,7 @@ void redraw(void){
   clear();
   for(int y=0; y<ny; y++)
   for(int x=0; x<nx; x++){
-    struct keyboard_key*const k = &keyboard_matrix[y][x];
+    struct keyboard_key*const k = &(*keyboard_matrix)[y][x];
     if(!k->display_name)
       continue;
     WINDOW* win = subwin(stdscr, h, w, y*h, x*w);
@@ -238,7 +280,7 @@ int main(){
             int y = event.y/h;
             if(x>=nx || y>=ny)
               break;
-            struct keyboard_key* k = &keyboard_matrix[y][x];
+            struct keyboard_key* k = &(*keyboard_matrix)[y][x];
             if(!k->win)
               break;
             key_press(k);
