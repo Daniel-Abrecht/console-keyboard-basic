@@ -43,10 +43,10 @@ struct keyboard_key keyboard_matrix_default[5][14] = {
 };
 struct keyboard_key keyboard_matrix_shift[5][14] = {
   {{"⇅",0,next_mode},{"ESC","!ESCAPE"},{"PgUp","!PAGE_UP"},{"PgDn","!PAGE_DOWN"},{"HOME","!HOME"},{"END","!END"},{"&"},{"/"},{"|"},{"◀","!LEFT"},{"▶","!RIGHT"},{"▼","!DOWN"},{"▲","!UP"},{"DEL","!DELETE"}},
-  {{":"},{"+"},{"@"},{"#"},{"*"},{"%"},{"&"},{"~"},{"("},{")"},{"="},{"?"},{"^"},{"⌫ BACKSPACE","!BACKSPACE"}},
+  {{"#"},{"+"},{"@"},{"#"},{"*"},{"%"},{"&"},{"~"},{"("},{")"},{"="},{"?"},{"^"},{"⌫ BACKSPACE","!BACKSPACE"}},
   {{"TAB","!TAB"},{"Q"},{"W"},{"E"},{"R"},{"T"},{"Z"},{"U"},{"I"},{"O"},{"P"},{"["},{"]"},{"⏎ ENTER","!ENTER"}},
   {{"⇪",0,shift},{"A"},{"S"},{"D"},{"F"},{"G"},{"H"},{"J"},{"K"},{"L"},{"<"},{">"},{"$"},{" "}},
-  {{"CTRL"},{"\\"},{"Y"},{"X"},{"C"},{"V"},{"B"},{"N"},{"M"},{"."},{","},{";"},{"_"},{" "}},
+  {{"CTRL"},{"\\"},{"Y"},{"X"},{"C"},{"V"},{"B"},{"N"},{"M"},{"."},{","},{"!"},{"_"},{" "}},
 };
 struct keyboard_key (*keyboard_matrix)[5][14] = &keyboard_matrix_default;
 static const int nx = 14;
