@@ -1,0 +1,3 @@
+ * Implement control key
+ * Allow for different or custom layouts.
+ * Implement framebuffer support
