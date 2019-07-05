@@ -150,7 +150,7 @@ void next_mode(void){
 
 void onwinch(int sig){
   (void)sig;
-  (void)write(winchfd[1], (uint8_t[]){1}, 1);
+  while(write(winchfd[1], (uint8_t[]){1}, 1) == -1 && errno == EINTR);
 }
 
 int init(void){
@@ -256,8 +256,9 @@ int main(){
       continue;
     if(fds[PFD_WINCH].revents & POLLIN){
       uint8_t c;
-      (void)read(winchfd[0], &c, 1);
-      if(c != 1) continue;
+      ssize_t res = read(winchfd[0], &c, 1);
+      if(res == -1 || c != 1)
+        continue;
       if(init())
         return 1;
       redraw();
