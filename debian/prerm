@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-if [ "$1" = remove ] ; then
+if [ "$1" = remove ] || [ "$1" = purge ]; then
   update-alternatives --remove console-keyboard /usr/bin/console-keyboard-basic 
 fi
 

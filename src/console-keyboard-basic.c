@@ -33,20 +33,21 @@ static int winchfd[2];
 
 void next_mode(void);
 void shift(void);
+void toggle_ctrl(void);
 
 struct keyboard_key keyboard_matrix_default[5][14] = {
   {{"⇅",0,next_mode},{"ESC","!ESCAPE"},{"PgUp","!PAGE_UP"},{"PgDn","!PAGE_DOWN"},{"HOME","!HOME"},{"END","!END"},{"&"},{"/"},{"|"},{"◀","!LEFT"},{"▶","!RIGHT"},{"▼","!DOWN"},{"▲","!UP"},{"DEL","!DELETE"}},
   {{":"},{"1"},{"2"},{"3"},{"4"},{"5"},{"6"},{"7"},{"8"},{"9"},{"0"},{"'"},{"\""},{"⌫ BACKSPACE","!BACKSPACE"}},
   {{"TAB","!TAB"},{"q"},{"w"},{"e"},{"r"},{"t"},{"z"},{"u"},{"i"},{"o"},{"p"},{"["},{"]"},{"⏎ ENTER","!ENTER"}},
   {{"⇧",0,shift},{"a"},{"s"},{"d"},{"f"},{"g"},{"h"},{"j"},{"k"},{"l"},{"{"},{"}"},{"$"},{" "}},
-  {{"CTRL"},{"\\"},{"y"},{"x"},{"c"},{"v"},{"b"},{"n"},{"m"},{"."},{","},{";"},{"-"},{" "}},
+  {{"CTRL",0,toggle_ctrl},{"\\"},{"y"},{"x"},{"c"},{"v"},{"b"},{"n"},{"m"},{"."},{","},{";"},{"-"},{" "}},
 };
 struct keyboard_key keyboard_matrix_shift[5][14] = {
   {{"⇅",0,next_mode},{"ESC","!ESCAPE"},{"PgUp","!PAGE_UP"},{"PgDn","!PAGE_DOWN"},{"HOME","!HOME"},{"END","!END"},{"&"},{"/"},{"|"},{"◀","!LEFT"},{"▶","!RIGHT"},{"▼","!DOWN"},{"▲","!UP"},{"DEL","!DELETE"}},
   {{"#"},{"+"},{"@"},{"#"},{"*"},{"%"},{"&"},{"~"},{"("},{")"},{"="},{"?"},{"^"},{"⌫ BACKSPACE","!BACKSPACE"}},
   {{"TAB","!TAB"},{"Q"},{"W"},{"E"},{"R"},{"T"},{"Z"},{"U"},{"I"},{"O"},{"P"},{"["},{"]"},{"⏎ ENTER","!ENTER"}},
   {{"⇪",0,shift},{"A"},{"S"},{"D"},{"F"},{"G"},{"H"},{"J"},{"K"},{"L"},{"<"},{">"},{"$"},{" "}},
-  {{"CTRL"},{"\\"},{"Y"},{"X"},{"C"},{"V"},{"B"},{"N"},{"M"},{"."},{","},{"!"},{"_"},{" "}},
+  {{"CTRL",0,toggle_ctrl},{"\\"},{"Y"},{"X"},{"C"},{"V"},{"B"},{"N"},{"M"},{"."},{","},{"!"},{"_"},{" "}},
 };
 struct keyboard_key (*keyboard_matrix)[5][14] = &keyboard_matrix_default;
 static const int nx = 14;
@@ -60,6 +61,7 @@ enum shift_state {
 };
 
 enum shift_state shift_state = ST_NO_SHIFT;
+bool ctrl = false;
 
 void redraw(void);
 int set_shift_state(enum shift_state s){
@@ -85,6 +87,15 @@ void shift(void){
   set_shift_state((shift_state+1) % ST_COUNT);
 }
 
+void key_release(struct keyboard_key*const k){
+  if(k == &keyboard_matrix_default[3][0] || k == &keyboard_matrix_shift[3][0])
+    return;
+  if(ctrl && k == &(*keyboard_matrix)[4][0])
+    return;
+  wbkgd(k->win, COLOR_PAIR(k->color));
+  wrefresh(k->win);
+}
+
 void key_press(struct keyboard_key*const k){
   wbkgd(k->win, COLOR_PAIR(BLACK_GREEN));
   wrefresh(k->win);
@@ -100,18 +111,20 @@ void key_press(struct keyboard_key*const k){
   if(seq[0] == '!'){
     lck_send_key(seq+1);
   }else{
-    lck_send_string(seq);
+    enum lck_key_modifier_mask mask = 0;
+    if(ctrl)
+      mask |= LCK_MODIFIER_KEY_CTRL;
+    lck_send_string(seq, mask);
   }
-  refresh();
+  if(ctrl){
+    ctrl = false;
+    struct keyboard_key*const k = &(*keyboard_matrix)[4][0];
+    wbkgd(k->win, COLOR_PAIR(k->color));
+    wrefresh(k->win);
+  }
   if( shift_state == ST_ONE_SHIFT && (k != &keyboard_matrix_default[3][0] || k != &keyboard_matrix_shift[3][0]) )
     set_shift_state(ST_NO_SHIFT);
-}
-
-void key_release(struct keyboard_key*const k){
-  if(k == &keyboard_matrix_default[3][0] || k == &keyboard_matrix_shift[3][0])
-    return;
-  wbkgd(k->win, COLOR_PAIR(k->color));
-  wrefresh(k->win);
+  refresh();
 }
 
 enum display_state {
@@ -142,6 +155,15 @@ int set_display_state(enum display_state s){
   display_state = s;
   redraw();
   return ret;
+}
+
+void toggle_ctrl(){
+  ctrl = !ctrl;
+  if(ctrl){
+    struct keyboard_key*const k = &(*keyboard_matrix)[4][0];
+    wbkgd(k->win, COLOR_PAIR(ctrl?BLACK_GREEN:k->color));
+    wrefresh(k->win);
+  }
 }
 
 void next_mode(void){
@@ -206,6 +228,8 @@ void redraw(void){
     if(tx<0) tx = 0;
     mvwaddstr(win, h/2, tx, k->display_name);
     k->color = (x+y) % 2 ? WHITE_BLACK : BLACK_WHITE;
+    if(x==0 && y==4 && ctrl)
+      k->color = BLACK_GREEN;
     wbkgd(win, COLOR_PAIR(k->color));
     k->win = win;
     wrefresh(win);
