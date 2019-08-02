@@ -38,10 +38,10 @@ build/%.c.o: %.c
 bin/console-keyboard-basic: $(OBJECTS) | bin/.dir
 	$(CC) $(LD_OPTS) $^ $(LIBS) -o $@
 
-install: install-bin install-link
+install-all: install install-link
 	@true
 
-install-bin:
+install:
 	mkdir -p "$(DESTDIR)$(PREFIX)/bin/"
 	cp bin/console-keyboard-basic "$(DESTDIR)$(PREFIX)/bin/console-keyboard-basic"
 
