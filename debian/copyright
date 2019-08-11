@@ -6,7 +6,7 @@ Source:
 
 Files: *
 Copyright: 2019 Daniel Abrecht <public@danielabrecht.ch>
-License: GPL-3.0
+License: GPL-3.0+
 
 Files: debian/*
 Copyright: 2019 Daniel Patrick Abrecht <deb@danielabrecht.ch>
@@ -29,7 +29,3 @@ License: GPL-3.0+
  On Debian systems, the complete text of the GNU General
  Public License version 3 can be found in "/usr/share/common-licenses/GPL-3".
 
-# Please also look if there are files or directories which have a
-# different copyright/license attached and list them here.
-# Please avoid picking licenses with terms that are more restrictive than the
-# packaged work, as it may make Debian's contributions unacceptable upstream.
