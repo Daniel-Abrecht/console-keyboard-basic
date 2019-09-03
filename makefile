@@ -1,26 +1,27 @@
 # Copyright (c) 2019 Daniel Abrecht
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-CC = gcc
-AR = ar
-
 PREFIX = /usr
 
 SOURCES = src/console-keyboard-basic.c
 
-OPTIONS  = -ffunction-sections -fdata-sections -g -Og
+ifdef DEBUG
+CC_OPTS += -Og -g
+endif
 
-CC_OPTS  = -fvisibility=hidden -I include -finput-charset=UTF-8
-CC_OPTS += -std=c99 -Wall -Wextra -pedantic -Werror
+ifndef LENIENT
+CC_OPTS += -Werror
+endif
+
+CC_OPTS += -ffunction-sections -fdata-sections
+CC_OPTS += -fvisibility=hidden -I include -finput-charset=UTF-8
+CC_OPTS += -std=c99 -Wall -Wextra -pedantic
 CC_OPTS += $(shell ncursesw5-config --cflags)
 CC_OPTS += -Wno-missing-field-initializers
 
-LD_OPTS  = -Wl,-gc-sections
+LD_OPTS  += -Wl,-gc-sections
 LIBS += $(shell ncursesw5-config --libs)
 LIBS += -lconsolekeyboard
-
-CC_OPTS += $(OPTIONS)
-LD_OPTS += $(OPTIONS)
 
 OBJECTS += $(SOURCES:%=build/%.o)
 
@@ -33,10 +34,10 @@ all: bin/console-keyboard-basic
 
 build/%.c.o: %.c
 	mkdir -p "$(dir $@)"
-	$(CC) $(CC_OPTS) -c -o $@ $^
+	$(CC) -c -o "$@" $(CC_OPTS) $(CFLAGS) "$<"
 
 bin/console-keyboard-basic: $(OBJECTS) | bin/.dir
-	$(CC) $(LD_OPTS) $^ $(LIBS) -o $@
+	$(CC) -o "$@" $(LD_OPTS) $^ $(LIBS) $(LDFLAGS)
 
 install-all: install install-link
 	@true
