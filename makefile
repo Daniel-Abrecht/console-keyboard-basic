@@ -34,7 +34,7 @@ all: bin/console-keyboard-basic
 
 build/%.c.o: %.c
 	mkdir -p "$(dir $@)"
-	$(CC) -c -o "$@" $(CC_OPTS) $(CFLAGS) "$<"
+	$(CC) -c -o "$@" $(CC_OPTS) $(CPPFLAGS) $(CFLAGS) "$<"
 
 bin/console-keyboard-basic: $(OBJECTS) | bin/.dir
 	$(CC) -o "$@" $(LD_OPTS) $^ $(LIBS) $(LDFLAGS)

@@ -1,8 +1,5 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: console-keyboard-basic
-Source:
-  <https://gitlab.com/DanielAbrecht/libttymultiplex>
-  <https://github.com/Daniel-Abrecht/libttymultiplex>
 
 Files: *
 Copyright: 2019 Daniel Abrecht <public@danielabrecht.ch>

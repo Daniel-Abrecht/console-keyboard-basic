@@ -2,8 +2,8 @@ Source: console-keyboard-basic
 Section: misc
 Priority: optional
 Maintainer: Daniel Patrick Abrecht <deb@danielabrecht.ch>
-Build-Depends: libconsolekeyboard-dev, libncursesw5-dev, debhelper (>= 9)
-Standards-Version: 3.9.8
+Build-Depends: libconsolekeyboard-dev, libncursesw5-dev, debhelper (>= 12~)
+Standards-Version: 4.3.0
 #Homepage: <insert the upstream URL, if relevant>
 # Also available at:
 #  https://gitlab.com/DanielAbrecht/console-keyboard-basic.git
@@ -20,4 +20,3 @@ Description: Very basic console keyboard
  This is a very basic proof of concept console keyboard intended
  to be used with the console-keyboard-multiplexer. Key presses are
  sent to the console-keyboard-multiplexer using libconsolekeyboard.
-
