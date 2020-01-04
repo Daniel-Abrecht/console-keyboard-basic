@@ -16,11 +16,11 @@ endif
 CC_OPTS += -ffunction-sections -fdata-sections
 CC_OPTS += -fvisibility=hidden -I include -finput-charset=UTF-8
 CC_OPTS += -std=c99 -Wall -Wextra -pedantic
-CC_OPTS += $(shell ncursesw5-config --cflags)
+CC_OPTS += $(shell pkg-config --cflags ncursesw)
 CC_OPTS += -Wno-missing-field-initializers
 
 LD_OPTS  += -Wl,-gc-sections
-LIBS += $(shell ncursesw5-config --libs)
+LIBS += $(shell pkg-config --libs ncursesw)
 LIBS += -lconsolekeyboard
 
 OBJECTS += $(SOURCES:%=build/%.o)
