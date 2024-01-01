@@ -15,7 +15,7 @@ Vcs-Browser: https://projects.dpa.li/git/?p=console-keyboard-basic.git;a=summary
 Package: console-keyboard-basic
 Provides: console-keyboard
 Architecture: any
-Depends: libconsolekeyboard1, libncursesw5, ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Very basic console keyboard
  This is a very basic proof of concept console keyboard intended
  to be used with the console-keyboard-multiplexer. Key presses are
