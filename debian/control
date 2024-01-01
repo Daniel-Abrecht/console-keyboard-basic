@@ -2,7 +2,7 @@ Source: console-keyboard-basic
 Section: misc
 Priority: optional
 Maintainer: Daniel Patrick Abrecht <deb@danielabrecht.ch>
-Build-Depends: libconsolekeyboard-dev, libncursesw5-dev, pkgconf, debhelper (>= 12~)
+Build-Depends: libconsolekeyboard-dev, libncurses-dev, pkgconf, debhelper (>= 12~)
 Standards-Version: 4.3.0
 #Homepage: <insert the upstream URL, if relevant>
 # Also available at:
